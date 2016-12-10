@@ -4,10 +4,7 @@
  * and open the template in the editor.
  */
 package systemmonitor;
-import java.io.IOException;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.hyperic.sigar.*;
 /**
  *
@@ -43,6 +40,11 @@ public class SystemMonitor extends javax.swing.JFrame {
         jLabel4 = new javax.swing.JLabel();
         ProcessPanel = new javax.swing.JScrollPane();
         TextAreaProcess = new javax.swing.JTextArea();
+        jLabel5 = new javax.swing.JLabel();
+        jLabel6 = new javax.swing.JLabel();
+        jLabel7 = new javax.swing.JLabel();
+        NetworkTransmitted = new javax.swing.JLabel();
+        NetworkRecieve = new javax.swing.JLabel();
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setMaximumSize(new java.awt.Dimension(350, 500));
@@ -79,8 +81,18 @@ public class SystemMonitor extends javax.swing.JFrame {
             .addGroup(ProcessParentPanelLayout.createSequentialGroup()
                 .addComponent(jLabel4)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(ProcessPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 231, Short.MAX_VALUE))
+                .addComponent(ProcessPanel, javax.swing.GroupLayout.DEFAULT_SIZE, 197, Short.MAX_VALUE))
         );
+
+        jLabel5.setText("Network Usage");
+
+        jLabel6.setText("Rx");
+
+        jLabel7.setText("Tx");
+
+        NetworkTransmitted.setText("jLabel8");
+
+        NetworkRecieve.setText("jLabel9");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(getContentPane());
         getContentPane().setLayout(layout);
@@ -90,16 +102,25 @@ public class SystemMonitor extends javax.swing.JFrame {
                 .addContainerGap()
                 .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                     .addComponent(ProcessParentPanel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                    .addGroup(layout.createSequentialGroup()
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
                             .addComponent(jLabel1)
                             .addComponent(jLabel2)
-                            .addComponent(jLabel3))
+                            .addComponent(jLabel3)
+                            .addComponent(jLabel5))
                         .addGap(18, 18, 18)
                         .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                            .addComponent(ProgressBarFileSystemUsage, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addComponent(ProgressBarFileSystemUsage, javax.swing.GroupLayout.DEFAULT_SIZE, 237, Short.MAX_VALUE)
                             .addComponent(ProgressBarCPU, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                            .addComponent(ProgressBarSystemMemory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))))
+                            .addComponent(ProgressBarSystemMemory, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(jLabel6)
+                                .addGap(18, 18, 18)
+                                .addComponent(NetworkRecieve)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                                .addComponent(jLabel7)
+                                .addGap(18, 18, 18)
+                                .addComponent(NetworkTransmitted)))))
                 .addContainerGap())
         );
         layout.setVerticalGroup(
@@ -118,7 +139,14 @@ public class SystemMonitor extends javax.swing.JFrame {
                     .addComponent(ProgressBarFileSystemUsage, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                     .addComponent(jLabel3))
                 .addGap(18, 18, 18)
-                .addComponent(ProcessParentPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel5)
+                    .addComponent(jLabel6)
+                    .addComponent(jLabel7)
+                    .addComponent(NetworkTransmitted)
+                    .addComponent(NetworkRecieve))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 16, Short.MAX_VALUE)
+                .addComponent(ProcessParentPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap())
         );
 
@@ -148,7 +176,10 @@ public class SystemMonitor extends javax.swing.JFrame {
             } catch (ClassNotFoundException | InstantiationException | IllegalAccessException | javax.swing.UnsupportedLookAndFeelException ex) {
                 java.util.logging.Logger.getLogger(SystemMonitor.class.getName()).log(java.util.logging.Level.SEVERE, null, ex);
             }
+            
             Sigar sigar = new Sigar();
+            NetworkData networkData = new NetworkData(sigar);
+                
             SystemMonitor systemMonitor = new SystemMonitor();
             systemMonitor.ProgressBarFileSystemUsage.setStringPainted(true);
             systemMonitor.ProgressBarSystemMemory.setStringPainted(true);
@@ -159,19 +190,21 @@ public class SystemMonitor extends javax.swing.JFrame {
                 CpuPerc cpuTimer = sigar.getCpuPerc();
                 FileSystemUsage filesystemusage = sigar.getFileSystemUsage("/");
                 long[] proc = sigar.getProcList();
-                
+                Long[] metric = networkData.getMetric();
             
             
             
                 System.out.println("Memory "+mem.getUsedPercent());
                 System.out.println("CPU "+cpuTimer.getCombined()*100);
-            
+                System.out.println("Rx " + sigar.formatSize(metric[0])+ "\tTx "+sigar.formatSize(metric[1]));
             
                 systemMonitor.ProgressBarSystemMemory.setValue((int) (mem.getUsedPercent()));
                 systemMonitor.ProgressBarCPU.setValue((int)(cpuTimer.getCombined()*100));
                 systemMonitor.ProgressBarFileSystemUsage.setValue((int)(filesystemusage.getUsePercent()) );
                 systemMonitor.TextAreaProcess.setText("");
-                
+                systemMonitor.NetworkRecieve.setText(sigar.formatSize(metric[0]) + "/s");
+                systemMonitor.NetworkTransmitted.setText(sigar.formatSize(metric[1]) + "/s");
+                /*
                 String A = "";
                 for(long L:proc)
                 {   
@@ -185,7 +218,7 @@ public class SystemMonitor extends javax.swing.JFrame {
                 }
                 systemMonitor.TextAreaProcess.setText(A);
              //   System.out.println(A);
-                
+                */
                 TimeUnit.SECONDS.sleep(1);
             }
 
@@ -195,6 +228,8 @@ public class SystemMonitor extends javax.swing.JFrame {
     }
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel NetworkRecieve;
+    private javax.swing.JLabel NetworkTransmitted;
     private javax.swing.JScrollPane ProcessPanel;
     private javax.swing.JPanel ProcessParentPanel;
     private javax.swing.JProgressBar ProgressBarCPU;
@@ -205,6 +240,9 @@ public class SystemMonitor extends javax.swing.JFrame {
     private javax.swing.JLabel jLabel2;
     private javax.swing.JLabel jLabel3;
     private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
     private javax.swing.JScrollBar jScrollBar1;
     // End of variables declaration//GEN-END:variables
 }
